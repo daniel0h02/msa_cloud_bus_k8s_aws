@@ -1,0 +1,97 @@
+name: eks pod deply
+
+on:         
+  push:     
+    branches: 
+      - main
+
+jobs:       
+  
+  build-and-deploy:     
+    # runner
+    runs-on: ubuntu-latest      
+
+    steps:      
+      - name: checkout github       
+        uses: actions/checkout@v2 
+
+      - name: install kubectl
+        uses: azure/setup-kubectl@v3  
+        with:
+          version: "v1.34.1"
+
+      - name: aws configure
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_KEY }}             
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}  
+          aws-region: us-east-2  
+      
+      - name: aws_eks_cluster update
+        run: aws eks update-kubeconfig --region us-east-2 --name lgcns-daniel-cluster
+
+
+      - name: aws ecr login       
+        uses: aws-actions/amazon-ecr-login@v1
+
+      # apigateway
+      - name: apigateway build and push docker img to ecr    
+        env:      
+          REGISTRY: 933090817123.dkr.ecr.us-east-2.amazonaws.com   
+          REPOSITORY: api-gateway      
+          IMAGE_TAG: latest     
+        run: |          
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f ./apigateway/Dockerfile ./apigateway   # 위에 변수 참조   
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+
+      - name: eks kubectl apigateway apply
+        run: |
+          kubectl apply -f ./apigateway/k8s/apigateway-deply.yml
+          kubectl rollout restart deployment apigateway-deployment -n lgcns
+
+      # user
+      - name: user build and push docker img to ecr    
+        env:      #외부환경 명령어 주입, 환경 변수
+          REGISTRY: 933090817123.dkr.ecr.us-east-2.amazonaws.com   # ecr엔드포인트, .com까지만
+          REPOSITORY: user-service      # 그 뒤는 여기에
+          IMAGE_TAG: latest     # 버전
+        run: |          # 역슬레시, 그룹화 시킬 때 씀
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f ./user/Dockerfile ./user   # 위에 변수 참조   
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+
+      - name: eks kubectl user apply
+        run: |
+          kubectl apply -f ./user/k8s/user-deply.yml
+          kubectl rollout restart deployment user-deployment -n lgcns
+
+
+      # product
+      - name: product build and push docker img to ecr    
+        env:      #외부환경 명령어 주입, 환경 변수
+          REGISTRY: 933090817123.dkr.ecr.us-east-2.amazonaws.com   # ecr엔드포인트, .com까지만
+          REPOSITORY: product-service      # 그 뒤는 여기에
+          IMAGE_TAG: latest     # 버전
+        run: |          # 역슬레시, 그룹화 시킬 때 씀
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f ./product/Dockerfile ./product   # 위에 변수 참조   
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+
+      - name: eks kubectl product apply
+        run: |
+          kubectl apply -f ./product/k8s/product-deply.yml
+          kubectl rollout restart deployment product-deployment -n lgcns
+
+      
+      # order
+      - name: order build and push docker img to ecr    
+        env:      #외부환경 명령어 주입, 환경 변수
+          REGISTRY: 933090817123.dkr.ecr.us-east-2.amazonaws.com   # ecr엔드포인트, .com까지만
+          REPOSITORY: order-service      # 그 뒤는 여기에
+          IMAGE_TAG: latest     # 버전
+        run: |          # 역슬레시, 그룹화 시킬 때 씀
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f ./order/Dockerfile ./order   # 위에 변수 참조   
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+
+      - name: eks kubectl order apply
+        run: |
+          kubectl apply -f ./order/k8s/order-deply.yml
+          kubectl rollout restart deployment order-deployment -n lgcns

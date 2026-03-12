@@ -1,0 +1,80 @@
+
+# # localhost용
+# server:
+#     # eureka server 의해서 임의의 port가 할당(spring server)
+#   port: 0
+  
+# spring:
+
+#   application:
+#     # api gateway
+#     # http://server.xxxxxx.shop/
+#     # url pattern
+#     # http://server.xxxxxx.shop/oreder-service/
+#     # http://server.xxxxxx.shop/order-service/order/create
+#     name: order-service
+
+
+#   # mariadb settings
+#   datasource:
+#     driver-class-name: org.mariadb.jdbc.Driver
+#     url: jdbc:mariadb://localhost:3306/inspire  
+#     username: root
+#     password: myky0226@
+  
+#   jpa:
+#     hibernate: 
+#       # create, create-drop, update, none
+#       ddl-auto: create
+#       # 콘솔출력
+#     show-sql: true     
+#     properties:
+#       hibernate:
+#         # h2
+#         # dialect: org.hibernate.dialect.H2Dialect
+#         # mariadb
+#         dialect: org.hibernate.dialect.MariaDBDialect
+#         format_sql: true 
+  
+
+#   kafka:
+#     kafka-server: localhost:9092
+
+  
+
+
+# # eureka client user service -> eureka server
+# eureka:
+#     client:
+#         serviceUrl:
+#             defaultZone: http://localhost:8761/eureka/
+
+
+# # Feign + CircuitBreaker 활성화
+# feign:
+#   circuitbreaker:
+#     enabled: true
+
+
+# # Feign + CircuitBreaker 트렌젝션 정리
+# resilience4j:
+#   circuitbreaker:
+#     instances:
+#       productService:
+#         failure-rate-threshold: 40
+#         wait-duration-in-open-state: 10s
+
+
+
+# config server version
+
+spring:
+  application:
+    name: order-service
+  config:
+    import: "optional:configserver:http://localhost:8080"
+  
+  cloud:
+    config:
+      fail-fast: true
+
