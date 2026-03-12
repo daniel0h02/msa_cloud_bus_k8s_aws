@@ -60,6 +60,11 @@
 
 
 #config server version
+eureka:
+  client:
+    enabled: false
+
+
 spring:
   application: 
     name: apigateway
@@ -70,3 +75,38 @@ spring:
   cloud:
     config:
       fail-fast: true 
+    gateway:
+
+      globalcors:
+            cors-configurations:
+                '[/**]':
+                    allowedOrigins:
+                        - 'http://localhost:3000'   # 나중에 S3 endpoint를 넣어주면 됨
+                    allowedMethods: '*'
+                    allowedHeaders: '*'
+                    exposedHeaders: '*'
+                    allowCredentials: true 
+
+      routes:
+            - id: user-service
+              predicates: 
+                - Path=/user-service/**
+              filters:
+                # 첫번째 접두어를 제거하는 뜻
+                # http://server.xxxxx.shop/user-service(이게 안보일 것임)/users/signIn
+                - StripPrefix=1
+              uri: http://user-service
+
+            - id : product-service
+              predicates:
+              - Path=/product-service/**
+              filters:
+              - StripPrefix=1
+              uri: http://product-service
+
+            - id : order-service
+              predicates:
+              - Path=/order-service/**
+              filters:
+              - StripPrefix=1
+              uri: http://order-service
