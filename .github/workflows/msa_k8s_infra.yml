@@ -52,6 +52,12 @@ jobs:
       - name: deploy redis
         run: |
           kubectl apply -f ./k8s/msa-redis.yml
+      
+      # RabbitMQ 배포
+      - name: deploy rabbitmq
+        run: |
+          kubectl apply -f ./k8s/msa-rabbitmq.yml
+
 
       # 배포 확인
       - name: check pods
