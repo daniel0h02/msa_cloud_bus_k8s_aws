@@ -74,7 +74,7 @@ spring:
   application:
     name: product-service
   config:
-    import: "optional:configserver:http://localhost:8080"
+    import: "optional:configserver:http://config-service:8080"
   
   cloud:
     config:

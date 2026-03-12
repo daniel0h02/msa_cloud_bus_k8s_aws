@@ -1,0 +1,49 @@
+#버전
+apiVersion: apps/v1
+
+kind: Deployment
+
+metadata:
+  name: rabbitmq-deployment
+  namespace: lgcns
+    
+
+spec: 
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rabbitmq
+
+  template:
+    metadata:
+      labels:
+        app: rabbitmq
+
+    spec:
+
+      containers:
+      - name: rabbitmq-container
+
+        image: rabbitmq:3-management
+        ports:
+          - containerPort: 5672
+
+
+
+
+---  #구분 지어야 함 아래처럼
+#core service setting
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq-service
+  namespace: lgcns
+
+spec: 
+  type: ClusterIP
+  ports:
+  - port: 5672
+    targetPort: 5672
+
+  selector:
+    app: rabbitmq      #selector의 name
