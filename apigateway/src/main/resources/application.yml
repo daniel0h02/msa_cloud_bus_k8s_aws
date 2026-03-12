@@ -65,7 +65,7 @@ spring:
     name: apigateway
 
   config:
-    import: "optional:configserver:http://config-service:8080"
+    import: "optional:configserver:http://config-service:80"
 
   cloud:
     config:
